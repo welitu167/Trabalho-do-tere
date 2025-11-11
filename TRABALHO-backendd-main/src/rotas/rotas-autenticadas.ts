@@ -7,7 +7,6 @@ import { adminAuth } from '../middleware/adm.js'
 const rotasAutenticadas = Router();
 
 // Rotas de usuários
-rotasAutenticadas.post("/usuarios", usuarioController.adicionar);
 rotasAutenticadas.get("/usuarios", usuarioController.listar);
 // admin delete user
 rotasAutenticadas.delete("/usuarios/:id", adminAuth, usuarioController.remover);

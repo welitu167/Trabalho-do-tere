@@ -12,7 +12,9 @@ interface Usuario {
   idade: number;
   email: string;
   senha: string; // hash via bcrypt
-  tipo: 'ADMIN' | 'USER'; // ou role (compatibilidade)
+  // O projeto armazena o campo `role` no banco (ex: 'admin' ou 'user').
+  // O middleware/jwt normaliza esse valor para `tipo` (ADMIN | USER) no token.
+  role: string; // ex: 'admin' | 'user'
 }
 ```
 Índices recomendados:
@@ -65,6 +67,29 @@ await db.collection('usuarios').deleteOne({
   _id: ObjectId.createFromHexString(id) 
 });
 ```
+
+#### Criando um usuário ADMIN (exemplo)
+
+1. Gere um hash de senha (no seu terminal com Node.js):
+
+```powershell
+node -e "const bcrypt=require('bcrypt'); bcrypt.hash('SENHA_ADMIN_AQUI',10).then(h=>console.log(h))"
+```
+
+2. No Mongo Shell ou MongoDB Compass, insira o usuário usando o hash retornado:
+
+```javascript
+db.usuarios.insertOne({
+  nome: 'Administrador',
+  idade: 30,
+  email: 'admin@local',
+  senha: '<COLAR_HASH_AQUI>',
+  role: 'admin'
+});
+```
+
+> Observação: no login o backend normaliza `role` para `tipo` com valores 'ADMIN' ou 'USER' ao gerar o JWT.
+
 
 ### Produtos (CRUD)
 ```javascript

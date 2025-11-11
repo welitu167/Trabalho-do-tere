@@ -16,7 +16,8 @@ app.use(Auth);
 app.use(rotasAutenticadas);
 
 const port = process.env.PORT || 8000;
+const host = process.env.HOST || 'localhost';
 app.listen(port, () => {
-    console.log(`Server is running on port ${port}`);
+    console.log(`Server is running at http://${host}:${port}/`);
 });
 

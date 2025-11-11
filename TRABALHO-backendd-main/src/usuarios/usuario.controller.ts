@@ -10,7 +10,9 @@ class UsuarioController {
             return res.status(400).json({mensagem:"Dados incompletos (nome,email,senha,idade)"})
         }
         const senhaCriptografada = await bcrypt.hash(senha,10)
-        const usuario = {nome,idade,email,senha:senhaCriptografada, role: role ? role : 'user'}
+        // normalize role to 'admin' | 'user' when storing in DB
+        const roleNormalized = role ? (role.toString().toLowerCase() === 'admin' ? 'admin' : 'user') : 'user'
+        const usuario = {nome,idade,email,senha:senhaCriptografada, role: roleNormalized}
         const resultado = await db.collection('usuarios')
             .insertOne(usuario)
         res.status(201).json({ ...usuario, _id: resultado.insertedId })
