@@ -95,6 +95,13 @@ function App() {
       .catch((err)=> showError(err))
   }
 
+  function excluirCarrinho(){
+    if(!window.confirm('Tem certeza que deseja excluir o carrinho do banco? Esta ação não pode ser desfeita.')) return
+    api.delete('/carrinho')
+      .then(()=> { setCarrinho(null); alert('Carrinho excluído do banco com sucesso') })
+      .catch((err)=> showError(err))
+  }
+
   function logout(){
     localStorage.removeItem('token')
     localStorage.removeItem('role')
@@ -186,6 +193,7 @@ function App() {
       <div style={{marginBottom:12}}>
         <button onClick={fetchCarrinho}>Atualizar Carrinho</button>
         <button onClick={esvaziarCarrinho} style={{marginLeft:8}}>Esvaziar Carrinho</button>
+        <button onClick={excluirCarrinho} style={{marginLeft:8, backgroundColor:'#ff6b6b', color:'#fff'}}>Excluir Carrinho (Banco)</button>
       </div>
 
       {carrinho ? (
