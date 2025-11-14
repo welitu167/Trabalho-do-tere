@@ -21,6 +21,7 @@ interface Produto {
     preco: number;
     descricao: string;
     urlfoto: string;
+    categoria?: string;
 }
 
 class ProdutoController {

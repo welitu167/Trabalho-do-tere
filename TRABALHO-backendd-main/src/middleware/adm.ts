@@ -1,6 +1,4 @@
-import Auth from './auth.js';
 import {Request, Response, NextFunction} from 'express'
-import jwt from 'jsonwebtoken'
 
 interface RequestAuth extends Request{
     usuarioId?: string
@@ -8,12 +6,12 @@ interface RequestAuth extends Request{
 }
 
 const adminAuth = (req: RequestAuth, res: Response, next: NextFunction) => {
-  // auth middleware must run before this and set req.role.render
+  // Middleware Auth deve rodar antes, definindo req.tipo
   const tipo = (req.tipo ?? '').toString().toUpperCase()
   if (tipo !== 'ADMIN') {
-    return res.status(403).json({ message: 'Acesso apenas para administradores' });
+    return res.status(403).json({ mensagem: 'Acesso apenas para administradores' });
   }
   next();
 };
 
-export { Auth, adminAuth };
+export { adminAuth };

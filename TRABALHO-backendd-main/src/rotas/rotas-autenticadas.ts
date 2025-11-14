@@ -2,46 +2,61 @@ import usuarioController from "../usuarios/usuario.controller.js";
 import produtoController from "../produtos/produto.controller.js";
 import carrinhoController from "../carrinho/carrinho.controller.js";
 import { Router } from "express";
+import Auth from '../middleware/auth.js'
 import { adminAuth } from '../middleware/adm.js'
 
 const rotasAutenticadas = Router();
 
 // Rotas de usuários
-rotasAutenticadas.get("/usuarios", usuarioController.listar);
+rotasAutenticadas.get("/usuarios", Auth, usuarioController.listar);
 // admin delete user
-rotasAutenticadas.delete("/usuarios/:id", adminAuth, usuarioController.remover);
+rotasAutenticadas.delete("/usuarios/:id", Auth, adminAuth, usuarioController.remover);
 // admin explicit routes (aliases) for clarity
-rotasAutenticadas.delete('/admin/usuario/:id', adminAuth, usuarioController.remover);
+rotasAutenticadas.delete('/admin/usuario/:id', Auth, adminAuth, usuarioController.remover);
 // admin list all carts
-rotasAutenticadas.get('/admin/carrinhos', adminAuth, carrinhoController.listarTodos);
+rotasAutenticadas.get('/admin/carrinhos', Auth, adminAuth, carrinhoController.listarTodos);
 
-// Rotas de produtos (create protected to admin)
-rotasAutenticadas.post("/produtos", adminAuth, produtoController.adicionar);
-rotasAutenticadas.get("/produtos", produtoController.listar);
-// editar e excluir produtos (admin)
-rotasAutenticadas.put('/produtos/:id', adminAuth, produtoController.atualizar);
-rotasAutenticadas.delete('/produtos/:id', adminAuth, produtoController.remover);
+// ============================================
+// ROTAS DE PRODUTOS
+// ============================================
+// USER: Pode apenas LISTAR (GET)
+// ADMIN: Pode CRIAR (POST), EDITAR (PUT), DELETAR (DELETE)
+// ============================================
 
-// Rotas de carrinho
-rotasAutenticadas.post("/adicionarItem", carrinhoController.adicionarItem);
-// adicionar item
-rotasAutenticadas.post("/adicionarItem", carrinhoController.adicionarItem);
+// Listar produtos (USER e ADMIN)
+rotasAutenticadas.get("/produtos", Auth, produtoController.listar);
 
-// obter o carrinho do usuário atual
-rotasAutenticadas.get("/carrinho", carrinhoController.listar);
+// Criar produto (ADMIN apenas)
+rotasAutenticadas.post("/produtos", Auth, adminAuth, produtoController.adicionar);
 
-// atualizar quantidade de um item (aceita body { produtoId, quantidade } ou param produtoId)
-rotasAutenticadas.put('/carrinho/:produtoId/quantidade', carrinhoController.atualizarQuantidade);
-rotasAutenticadas.patch('/carrinho/quantidade', carrinhoController.atualizarQuantidade);
+// Editar produto (ADMIN apenas)
+rotasAutenticadas.put('/produtos/:id', Auth, adminAuth, produtoController.atualizar);
 
-// remover um item do carrinho (por produtoId)
-rotasAutenticadas.delete('/carrinho/item', carrinhoController.removerItem); // aceita body
-rotasAutenticadas.delete('/carrinho/:itemId', carrinhoController.removerItem); // aceita param
+// Deletar produto (ADMIN apenas)
+rotasAutenticadas.delete('/produtos/:id', Auth, adminAuth, produtoController.remover);
 
-// esvaziar o carrinho do usuário atual
-rotasAutenticadas.delete('/carrinho', carrinhoController.remover);
+// ============================================
+// ROTAS DE CARRINHO (USER e ADMIN)
+// ============================================
 
-// admin route to remove any user's cart by usuarioId (params)
-rotasAutenticadas.delete('/admin/carrinho/:id', adminAuth, carrinhoController.remover);
+// Adicionar item ao carrinho
+rotasAutenticadas.post("/adicionarItem", Auth, carrinhoController.adicionarItem);
+
+// Obter carrinho do usuário atual
+rotasAutenticadas.get("/carrinho", Auth, carrinhoController.listar);
+
+// Atualizar quantidade de item no carrinho
+rotasAutenticadas.put('/carrinho/:produtoId/quantidade', Auth, carrinhoController.atualizarQuantidade);
+rotasAutenticadas.patch('/carrinho/quantidade', Auth, carrinhoController.atualizarQuantidade);
+
+// Remover item do carrinho
+rotasAutenticadas.delete('/carrinho/item', Auth, carrinhoController.removerItem);
+rotasAutenticadas.delete('/carrinho/:itemId', Auth, carrinhoController.removerItem);
+
+// Esvaziar carrinho
+rotasAutenticadas.delete('/carrinho', Auth, carrinhoController.remover);
+
+// Admin: Remover carrinho de qualquer usuário
+rotasAutenticadas.delete('/admin/carrinho/:id', Auth, adminAuth, carrinhoController.remover);
 
 export default rotasAutenticadas;

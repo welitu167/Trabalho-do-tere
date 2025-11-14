@@ -8,14 +8,14 @@ type ProdutoType = {
   nome: string,
   preco: number,
   descricao: string,
-  urlfoto: string
+  urlfoto: string,
+  categoria?: string
 }
 
 function App() {
   const [produtos, setProdutos] = useState<ProdutoType[]>([])
   const [carrinho, setCarrinho] = useState<any>(null)
   const [tipo, setTipo] = useState<string | null>(null)
-  const [editing, setEditing] = useState<ProdutoType | null>(null)
 
   useEffect(() => {
     api.get("/produtos")
@@ -57,7 +57,8 @@ function App() {
     const preco = Number(formData.get("preco"))
     const descricao = formData.get("descricao")
     const urlfoto = formData.get("urlfoto")
-    const produto = { nome, preco, descricao, urlfoto }
+    const categoria = formData.get("categoria")
+    const produto = { nome, preco, descricao, urlfoto, categoria: categoria || undefined }
     api.post("/produtos", produto)
       .then((response) => setProdutos([...produtos, response.data]))
       .catch((error) => {
@@ -110,22 +111,24 @@ function App() {
     window.location.href = '/login'
   }
 
-  function iniciarEdicao(produto:ProdutoType){
-    setEditing(produto)
-  }
-
-  function salvarEdicao(event: React.FormEvent<HTMLFormElement>){
-    event.preventDefault()
-    if(!editing) return
-    const formData = new FormData(event.currentTarget)
-    const nome = formData.get('nome')
-    const preco = Number(formData.get('preco'))
-    const descricao = formData.get('descricao')
-    const urlfoto = formData.get('urlfoto')
-    api.put(`/produtos/${editing._id}`, { nome, preco, descricao, urlfoto })
+  function abrirEdicao(produto:ProdutoType){
+    const novoNome = prompt('Novo nome:', produto.nome)
+    if(novoNome === null) return // cancelou
+    
+    const novoPreco = prompt('Novo preço (R$):', produto.preco.toString())
+    if(novoPreco === null) return // cancelou
+    
+    const novaCategoria = prompt('Nova categoria (deixe em branco para remover):', produto.categoria || '')
+    if(novaCategoria === null) return // cancelou
+    
+    api.put(`/produtos/${produto._id}`, { 
+      nome: novoNome, 
+      preco: Number(novoPreco), 
+      categoria: novaCategoria || undefined 
+    })
       .then(r=>{
-        setProdutos(produtos.map(p=> p._id === editing._id ? r.data : p))
-        setEditing(null)
+        setProdutos(produtos.map(p=> p._id === produto._id ? r.data : p))
+        alert('Produto editado com sucesso!')
       })
       .catch(showError)
   }
@@ -161,6 +164,7 @@ function App() {
           <input type="number" placeholder='Preço' name="preco" />
           <input type="text" placeholder='Descrição' name="descricao" />
           <input type="text" placeholder='URL Foto' name="urlfoto" />
+          <input type="text" placeholder='Categoria (opcional)' name="categoria" />
 
           <button type='submit'>Cadastrar</button>
         </form>
@@ -179,7 +183,7 @@ function App() {
                 <button onClick={()=>adicionarItemCarrinho(produto._id)}>Adicionar ao Carrinho</button>
                 {tipo === 'ADMIN' && (
                   <>
-                    <button onClick={()=> iniciarEdicao(produto)}>Editar</button>
+                    <button onClick={()=> abrirEdicao(produto)}>Editar</button>
                     <button onClick={()=> removerProduto(produto._id)}>Remover</button>
                   </>
                 )}
@@ -209,23 +213,6 @@ function App() {
           <p><strong>Total: R$ {carrinho.total}</strong></p>
         </div>
       ) : <p>Sem carrinho</p>}
-
-      {/* modal simples de edição */}
-      {editing && (
-        <div style={{position:'fixed', left:0, right:0, top:0, bottom:0, background:'rgba(0,0,0,0.3)'}}>
-          <div style={{background:'#fff', padding:20, maxWidth:600, margin:'40px auto'}}>
-            <h3>Editando: {editing.nome}</h3>
-            <form onSubmit={salvarEdicao}>
-              <input name="nome" defaultValue={editing.nome} />
-              <input name="preco" defaultValue={editing.preco} />
-              <input name="descricao" defaultValue={editing.descricao} />
-              <input name="urlfoto" defaultValue={editing.urlfoto} />
-              <button type='submit'>Salvar</button>
-              <button type='button' onClick={()=> setEditing(null)}>Cancelar</button>
-            </form>
-          </div>
-        </div>
-      )}
     </>
   )
 }
