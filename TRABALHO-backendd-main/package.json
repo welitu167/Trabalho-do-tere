@@ -1,10 +1,15 @@
 {
   "name": "1023a-backend-novo",
   "version": "1.0.0",
+  "main": "dist/index-mongo.js",
   "scripts": {
-    "build": "npx tsc", 
+    "dev": "tsx watch src/index-mongo.ts",
+    "dev:mongo": "tsx watch src/index-mongo.ts",
+    "build": "tsc",
     "start": "node dist/index-mongo.js",
-    "dev": "npx tsx src/index-mongo.ts"
+    "seed": "tsx src/scripts/seed.ts",
+    "verify": "tsx src/scripts/verify-carrinho.ts",
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
   "license": "ISC",
@@ -21,11 +26,10 @@
   },
   "devDependencies": {
     "@types/bcrypt": "^6.0.0",
-    "@types/cors": "^2.8.19",
     "@types/express": "^5.0.3",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^24.3.0",
-    "typescript": "^5.0.0",
-    "tsx": "^4.0.0"
+    "tsx": "^4.20.4",
+    "typescript": "^5.9.2"
   }
 }
