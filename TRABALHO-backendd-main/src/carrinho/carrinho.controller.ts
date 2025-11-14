@@ -9,7 +9,7 @@ interface ItemCarrinho {
     nome: string;
 }
 
-// Adiciona tipagem para collection
+// Adiciona tipagem para collection.notion
 interface Collection<T> {
     findOne(query: object): Promise<T | null>;
     find(): { toArray(): Promise<T[]> };
