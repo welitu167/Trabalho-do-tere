@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 // @ts-ignore
 import './App.css'
 import api from './api/api'
+import AlertProvider, { useAlerts } from './components/AlertProvider'
 
 type ProdutoType = {
   _id: string,
@@ -12,11 +13,12 @@ type ProdutoType = {
   categoria?: string
 }
 
-function App() {
+function AppInner() {
   const [produtos, setProdutos] = useState<ProdutoType[]>([])
   const [carrinho, setCarrinho] = useState<any>(null)
   const [tipo, setTipo] = useState<string | null>(null)
   const [nome, setNome] = useState<string | null>(null)
+  const alerts = useAlerts()
 
   useEffect(() => {
     api.get("/produtos")
@@ -24,11 +26,11 @@ function App() {
       .catch((error) => {
         if (error.response) {
           console.error(`Servidor respondeu mas com o erro:${error.response.data.mensagem ?? error.response.data}`)
-          alert(`Servidor respondeu mas com o erro:${error.response.data.mensagem ?? "olhe o console do navegador para mais informa\u00e7\u00f5es"}`)
+          alerts.showAlert('error', `Servidor respondeu mas com o erro:${error.response.data.mensagem ?? "olhe o console do navegador para mais informa\u00e7\u00f5es"}`)
         }
         else { //Não teve resposta do servidor, então mostramos o erro do axios.vercellokoi
           console.error(`Erro Axios: ${error.message}`)
-          alert(`Servidor não respondeu, voc\u00ea ligou o backend? Erro do Axios: ${error.message ?? "Erro desconhecido"}`)
+          alerts.showAlert('error', `Servidor não respondeu, voc\u00ea ligou o backend? Erro do Axios: ${error.message ?? "Erro desconhecido"}`)
         }
       })
   }, [])
@@ -51,7 +53,7 @@ function App() {
 
   function showError(err:any){
     const msg = err?.response?.data?.mensagem ?? err?.message ?? 'Erro desconhecido'
-    alert(msg)
+    alerts.showAlert('error', msg)
   }
 
   function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
@@ -72,7 +74,7 @@ function App() {
 
   function adicionarItemCarrinho(produtoId:string){
     api.post("/adicionarItem", {produtoId,quantidade:1})
-      .then((r) => { setCarrinho(r.data); alert("Produto adicionado com sucesso!") })
+      .then((r) => { setCarrinho(r.data); alerts.showAlert('success', 'Produto adicionado com sucesso!') })
       .catch((error) => showError(error))
   }
 
@@ -96,14 +98,15 @@ function App() {
 
   function esvaziarCarrinho(){
     api.delete('/carrinho')
-      .then(()=> { setCarrinho(null); alert('Carrinho esvaziado') })
+      .then(()=> { setCarrinho(null); alerts.showAlert('info','Carrinho esvaziado') })
       .catch((err)=> showError(err))
   }
 
-  function excluirCarrinho(){
-    if(!window.confirm('Tem certeza que deseja excluir o carrinho do banco? Esta ação não pode ser desfeita.')) return
+  async function excluirCarrinho(){
+    const ok = await alerts.showConfirm('Tem certeza que deseja excluir o carrinho do banco? Esta ação não pode ser desfeita.')
+    if(!ok) return
     api.delete('/carrinho')
-      .then(()=> { setCarrinho(null); alert('Carrinho excluído do banco com sucesso') })
+      .then(()=> { setCarrinho(null); alerts.showAlert('success','Carrinho excluído do banco com sucesso') })
       .catch((err)=> showError(err))
   }
 
@@ -117,16 +120,16 @@ function App() {
     window.location.href = '/login'
   }
 
-  function abrirEdicao(produto:ProdutoType){
-    const novoNome = prompt('Novo nome:', produto.nome)
+  async function abrirEdicao(produto:ProdutoType){
+    const novoNome = await alerts.showPrompt('Novo nome:', produto.nome)
     if(novoNome === null) return // cancelou
-    
-    const novoPreco = prompt('Novo preço (R$):', produto.preco.toString())
+
+    const novoPreco = await alerts.showPrompt('Novo preço (R$):', String(produto.preco))
     if(novoPreco === null) return // cancelou
-    
-    const novaCategoria = prompt('Nova categoria (deixe em branco para remover):', produto.categoria || '')
+
+    const novaCategoria = await alerts.showPrompt('Nova categoria (deixe em branco para remover):', produto.categoria || '')
     if(novaCategoria === null) return // cancelou
-    
+
     api.put(`/produtos/${produto._id}`, { 
       nome: novoNome, 
       preco: Number(novoPreco), 
@@ -134,7 +137,7 @@ function App() {
     })
       .then(r=>{
         setProdutos(produtos.map(p=> p._id === produto._id ? r.data : p))
-        alert('Produto editado com sucesso!')
+        alerts.showAlert('success','Produto editado com sucesso!')
       })
       .catch(showError)
   }
@@ -250,4 +253,13 @@ function App() {
   )
 }
 
+function App(){
+  return (
+    <AlertProvider>
+      <AppInner />
+    </AlertProvider>
+  )
+}
+
 export default App
+
