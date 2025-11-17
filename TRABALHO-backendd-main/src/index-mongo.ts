@@ -16,7 +16,7 @@ app.use(rotasNaoAutenticadas);
 app.use(Auth);
 app.use(rotasAutenticadas);
 
-// Middleware de tratamento de erros (DEVE ser o ÚLTIMO)
+// Middleware de tratamento de erros, verificar erros e validações(DEVE ser o ÚLTIMO)
 app.use(errorHandler);
 
 const port = process.env.PORT || 8000;
