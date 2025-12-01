@@ -32,7 +32,7 @@ if (!PUBLISHABLE_KEY || PUBLISHABLE_KEY.includes('YOUR_PUBLISHABLE_KEY')) {
       const total = carrinho.total ?? carrinho.itens.reduce((acc,item)=> acc + item.precoUnitario * item.quantidade, 0);
       summaryEl.innerHTML = `<p><strong>Total:</strong> R$ ${total}</p>`;
 
-      // Create PaymentIntent on server
+      // Create PaymentIntent on server (card payments)
       const amountInCents = Math.round(Number(total) * 100);
       fetch('/create-payment-intent', {
         method: 'POST',
@@ -47,29 +47,37 @@ if (!PUBLISHABLE_KEY || PUBLISHABLE_KEY.includes('YOUR_PUBLISHABLE_KEY')) {
           }
 
           const clientSecret = data.clientSecret;
+          // Use Stripe Elements with a Card Element for explicit card payments
           const elements = stripe.elements({ clientSecret });
-          const paymentElement = elements.create('payment');
-          paymentElement.mount('#payment-element');
+          const cardElement = elements.create('card');
+          cardElement.mount('#payment-element');
 
           submitButton.addEventListener('click', async () => {
             submitButton.disabled = true;
             errorEl.textContent = '';
             paymentMessage.textContent = 'Processando pagamento...';
 
-            const { error } = await stripe.confirmPayment({
-              elements,
-              confirmParams: {
-                return_url: window.location.origin + '/pagamento-success.html'
-              },
-              redirect: 'if_required'
-            });
+            try {
+              const result = await stripe.confirmCardPayment(clientSecret, {
+                payment_method: { card: cardElement }
+              });
 
-            if (error) {
-              errorEl.textContent = error.message || 'Erro ao processar pagamento.';
+              if (result.error) {
+                errorEl.textContent = result.error.message || 'Erro ao processar pagamento.';
+                paymentMessage.textContent = '';
+                submitButton.disabled = false;
+              } else if (result.paymentIntent && result.paymentIntent.status === 'succeeded') {
+                paymentMessage.textContent = 'Pagamento realizado com sucesso! Redirecionando...';
+                // optional: redirect to success page
+                setTimeout(() => window.location.href = '/pagamento-success.html', 1200);
+              } else {
+                paymentMessage.textContent = 'Pagamento processado. Verifique seu extrato.';
+              }
+            } catch (err) {
+              console.error(err);
+              errorEl.textContent = 'Erro ao processar o pagamento.';
               paymentMessage.textContent = '';
               submitButton.disabled = false;
-            } else {
-              paymentMessage.textContent = 'Pagamento processado com sucesso! Redirecionando...';
             }
           });
         })
