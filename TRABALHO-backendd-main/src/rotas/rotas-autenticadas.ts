@@ -1,6 +1,7 @@
 import usuarioController from "../usuarios/usuario.controller.js";
 import produtoController from "../produtos/produto.controller.js";
 import carrinhoController from "../carrinho/carrinho.controller.js";
+import pagamentoController from "../pagamento/pagamento.controller.js";
 import { Router } from "express";
 import Auth from '../middleware/auth.js'
 import { adminAuth } from '../middleware/adm.js'
@@ -56,6 +57,9 @@ rotasAutenticadas.delete('/carrinho/:itemId', Auth, asyncHandler((req, res, next
 
 // Esvaziar carrinho
 rotasAutenticadas.delete('/carrinho', Auth, asyncHandler((req, res, next) => carrinhoController.remover(req, res)));
+
+// Criar PaymentIntent (Stripe) - usuário autenticado
+rotasAutenticadas.post('/create-payment-intent', Auth, asyncHandler((req, res, next) => pagamentoController.createPaymentIntent(req, res)));
 
 // Admin: Remover carrinho de qualquer usuário
 rotasAutenticadas.delete('/admin/carrinho/:id', Auth, adminAuth, asyncHandler((req, res, next) => carrinhoController.remover(req, res)));

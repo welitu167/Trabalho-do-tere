@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useState, ReactNode, useCallback } from 'react'
+import { createContext, useContext, useState, useCallback } from 'react'
+import type { ReactNode } from 'react'
 import './Alert.css'
 
 type AlertType = 'success' | 'error' | 'info'
@@ -48,25 +49,6 @@ export const AlertProvider = ({ children }: { children: ReactNode }) => {
       setModal({ type: 'prompt', message, defaultValue, resolve })
     })
   }, [])
-
-  // expose to window so non-react code (e.g. api interceptors) can use alerts
-  React.useEffect(()=>{
-    const obj = { showAlert, showConfirm, showPrompt }
-    ;(window as any).appAlerts = obj
-    function onError(e:any){
-      try{ obj.showAlert('error', `Erro: ${e?.message ?? String(e)}`) }catch{}
-    }
-    function onRejection(ev:any){
-      try{ obj.showAlert('error', `Promise rejeitada: ${ev?.reason ?? String(ev)}`) }catch{}
-    }
-    window.addEventListener('error', onError)
-    window.addEventListener('unhandledrejection', onRejection)
-    return ()=>{
-      delete (window as any).appAlerts
-      window.removeEventListener('error', onError)
-      window.removeEventListener('unhandledrejection', onRejection)
-    }
-  }, [showAlert, showConfirm, showPrompt])
 
   function closeModal(){
     setModal({ type: null, message: '' })
@@ -119,3 +101,4 @@ function PromptModal({ modal, closeModal }:{ modal:any, closeModal:()=>void }){
 }
 
 export default AlertProvider
+   

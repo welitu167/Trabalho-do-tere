@@ -234,6 +234,7 @@ function AppInner() {
         <button onClick={fetchCarrinho}>Atualizar Carrinho</button>
         <button onClick={esvaziarCarrinho} style={{marginLeft:8}}>Esvaziar Carrinho</button>
         <button onClick={excluirCarrinho} style={{marginLeft:8, backgroundColor:'#ff6b6b', color:'#fff'}}>Excluir Carrinho (Banco)</button>
+        <button onClick={() => window.location.href = '/pagamento.html'} style={{marginLeft:8, backgroundColor:'#2b6cb0', color:'#fff'}}>Pagamento</button>
       </div>
 
       {carrinho ? (
