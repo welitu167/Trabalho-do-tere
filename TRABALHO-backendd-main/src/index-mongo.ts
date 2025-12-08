@@ -11,7 +11,38 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 dotenv.config();
 
 const app = express();
-app.use(cors());
+
+// Configurar CORS com opções flexíveis para desenvolvimento e produção
+const corsOptions = {
+  origin: function (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) {
+    // Permitir requisições sem origin (mobile apps, curl, etc)
+    if (!origin) return callback(null, true);
+    
+    // Whitelist de origens permitidas
+    const whitelist = [
+      'http://localhost:5173',
+      'http://localhost:3000',
+      'http://127.0.0.1:5173',
+      'http://127.0.0.1:3000',
+      'https://trabalho-do-tere-backend-2.onrender.com',
+    ];
+    
+    if (whitelist.includes(origin)) {
+      callback(null, true);
+    } else {
+      // Em desenvolvimento, permitir qualquer origem; em produção, descomente para ser restritivo
+      callback(null, true); // Remova este comentário em produção para ser restritivo
+    }
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  optionsSuccessStatus: 200
+};
+
+app.use(cors(corsOptions));
+app.options('*', cors(corsOptions));
+
 app.use(express.json());
 
 app.use(rotasNaoAutenticadas);

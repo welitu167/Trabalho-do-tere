@@ -44,7 +44,7 @@ class UsuarioController {
     // padroniza tipo para ADMIN/USER
     const tipo = (usuario.role ?? 'user').toString().toUpperCase() === 'ADMIN' ? 'ADMIN' : 'USER'
     // criar token contendo o id e o tipo do usuário
-    const token = jwt.sign({usuarioId: usuario._id, tipo}, process.env.JWT_SECRET!, { expiresIn: '2h' })
+        const token = jwt.sign({usuarioId: usuario._id, tipo}, process.env.JWT_SECRET!, { expiresIn: '3d' })
     // Devolver token, tipo e nome do usuário
     res.status(200).json({ 
       token, 
